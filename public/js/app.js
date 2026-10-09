@@ -248,10 +248,8 @@ function renderAllIncidentsMapMarkers() {
       const lng = r.gisCoordinates.lng;
       latLngs.push([lat, lng]);
 
-      // Determine color coding based on incident nature
       const bgColor = getIncidentColorClass(r.nature);
 
-      // Create custom HTML marker icon for color coding
       const customIcon = L.divIcon({
         className: 'custom-incident-pin',
         html: `<div class="w-6 h-6 rounded-full ${bgColor} text-white flex items-center justify-center shadow-md border-2 border-white text-[10px] font-bold">📍</div>`,
@@ -261,7 +259,6 @@ function renderAllIncidentsMapMarkers() {
 
       const marker = L.marker([lat, lng], { icon: customIcon });
 
-      // Hover Tooltip (IR Number, Date & Time, Type of Incident)
       marker.bindTooltip(`
         <div class="text-xs space-y-0.5 p-1 font-sans">
           <strong class="text-rose-600 font-mono font-bold">${r.irNumber}</strong><br/>
@@ -270,7 +267,6 @@ function renderAllIncidentsMapMarkers() {
         </div>
       `, { direction: 'top', offset: [0, -10], opacity: 0.95 });
 
-      // Click Popup for Full Details
       marker.bindPopup(`
         <div class="text-xs space-y-1 p-1 font-sans">
           <strong class="text-rose-600 font-mono font-bold">${r.irNumber}</strong>
@@ -290,13 +286,25 @@ function renderAllIncidentsMapMarkers() {
   }
 }
 
-// Calculate static OpenStreetMap tile image URL directly from Lat/Lng coordinates
-function getOSMTileUrl(lat, lng, zoom = 16) {
-  const latRad = lat * Math.PI / 180;
+// Calculate Google Maps Roadmap tile URL and exact pin percentage offsets matching Step 1
+function getGoogleTileData(lat, lng, zoom = 16) {
+  const latRad = (lat * Math.PI) / 180;
   const n = Math.pow(2, zoom);
-  const xTile = Math.floor((lng + 180) / 360 * n);
-  const yTile = Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n);
-  return `https://tile.openstreetmap.org/${zoom}/${xTile}/${yTile}.png`;
+  
+  const floatX = ((lng + 180) / 360) * n;
+  const floatY = (1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n;
+  
+  const xTile = Math.floor(floatX);
+  const yTile = Math.floor(floatY);
+  
+  const pixelX = (floatX - xTile) * 256;
+  const pixelY = (floatY - yTile) * 256;
+  
+  const pctX = (pixelX / 256) * 100;
+  const pctY = (pixelY / 256) * 100;
+  
+  const url = `https://mt0.google.com/vt/lyrs=m&x=${xTile}&y=${yTile}&z=${zoom}`;
+  return { url, pctX, pctY };
 }
 
 /* ==========================================================================
@@ -394,7 +402,6 @@ function renderPatientsList() {
         </div>
       </div>
 
-      <!-- Basic Information -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div>
           <label class="block font-semibold text-slate-600 mb-1">Full Name</label>
@@ -417,7 +424,6 @@ function renderPatientsList() {
         </div>
       </div>
 
-      <!-- PATIENT VITALS BAR -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-sky-50/70 p-3 rounded-xl border border-sky-100">
         <div>
           <label class="block font-bold text-sky-800 mb-0.5">Heart Rate (BPM)</label>
@@ -437,7 +443,6 @@ function renderPatientsList() {
         </div>
       </div>
 
-      <!-- Injury & Hospital Disposition -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div>
           <label class="block font-semibold text-slate-600 mb-1">Anatomical Model Type</label>
@@ -465,7 +470,6 @@ function renderPatientsList() {
         </div>
       </div>
 
-      <!-- First Aid Given & Medical Interventions -->
       <div class="bg-white p-3 rounded-xl border border-slate-200">
         <label class="block font-bold text-rose-600 mb-1">First Aid / Medical Interventions Given</label>
         <input type="text" title="First Aid Medical Interventions" aria-label="First Aid Medical Interventions" value="${p.firstAid}" onchange="updatePatientField(${p.id}, 'firstAid', this.value)" placeholder="e.g. Oxygen inhalation (2L/min), Wound dressing, Spine Boarding, Splinting" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-rose-500 outline-none font-medium">
@@ -811,7 +815,6 @@ function onModelDoubleClick(event) {
     const hit = intersects[0];
     pendingPinVector = hit.point.clone();
     
-    // Clean and sanitize region name retrieved from mesh
     let rawRegionName = hit.object.name || (currentLayer === 'skin' ? 'External Surface' : 'Bone Structure');
     pendingPinRegion = sanitizeText(rawRegionName) || (currentLayer === 'skin' ? 'External Surface' : 'Bone Structure');
 
@@ -954,8 +957,8 @@ function buildOverviewReport() {
   updateLayerButtonsUI();
   render3DPinsForActivePatient();
 
-  // 2. GENERATE GIS MAP TILE IMAGE URL FOR PRINT
-  const osmTileUrl = getOSMTileUrl(gisCoords.lat, gisCoords.lng, 16);
+  // 2. GENERATE GOOGLE MAP TILE URL & EXACT PIN PERCENTAGE FOR PRINT
+  const tileData = getGoogleTileData(gisCoords.lat, gisCoords.lng, 16);
 
   container.innerHTML = `
     <div class="border-b-2 border-slate-800 pb-3 mb-3 flex justify-between items-center">
@@ -984,11 +987,11 @@ function buildOverviewReport() {
         <span>Pinned GIS Accident Location Map</span>
         <span class="text-[10px] font-mono text-rose-600 font-semibold">Coords: ${gisCoords.lat}, ${gisCoords.lng}</span>
       </h4>
-      <div class="h-44 w-full rounded overflow-hidden border border-slate-300 relative bg-slate-200 flex items-center justify-center">
-        <img src="${osmTileUrl}" class="w-full h-full object-cover" alt="GIS Incident Map Location">
-        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div class="bg-rose-600 text-white p-1.5 rounded-full shadow-lg border-2 border-white">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>
+      <div class="h-44 w-full rounded overflow-hidden border border-slate-300 relative bg-slate-200">
+        <img src="${tileData.url}" class="w-full h-full object-cover" alt="GIS Incident Map Location">
+        <div class="absolute transform -translate-x-1/2 -translate-y-1/2" style="left: ${tileData.pctX}%; top: ${tileData.pctY}%;">
+          <div class="bg-rose-600 text-white p-1 rounded-full shadow-lg border-2 border-white flex items-center justify-center">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>
           </div>
         </div>
       </div>
@@ -1069,14 +1072,12 @@ function printReport() {
 }
 
 function resetIncidentForm() {
-  // Clear dynamic lists state
   patientsList = [];
   docPhotos = [];
   respondersList = [];
   commandList = [];
   activePatientId = null;
 
-  // Add a fresh blank default patient
   addPatient(
     '', 
     'Famy, Laguna', 
@@ -1093,25 +1094,21 @@ function resetIncidentForm() {
     'skin'
   );
 
-  // Reset text inputs for location and landmark
   const placeInput = document.getElementById('inc-place');
   const landmarkInput = document.getElementById('inc-landmark');
   if (placeInput) placeInput.value = '';
   if (landmarkInput) landmarkInput.value = '';
 
-  // Auto-increment and generate the next sequential IR Number
   const prefix = masterData.settings?.prefix || 'IR-2026-';
   const nextNum = String(savedReports.length + 1).padStart(3, '0');
   const incNumInput = document.getElementById('inc-number');
   if (incNumInput) incNumInput.value = `${prefix}${nextNum}`;
 
-  // Reset Date & Time to current timestamp
   const now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
   const dateInput = document.getElementById('inc-time');
   if (dateInput) dateInput.value = now.toISOString().slice(0, 16);
 
-  // Re-render all UI sections and return workflow to Step 1
   renderPatientsList();
   renderPhotosGrid();
   renderRespondersList();
@@ -1144,7 +1141,6 @@ function saveIncidentReport() {
 
   alert(`Incident Report ${irNumber} Saved Successfully!`);
   
-  // Clear and refresh form for the next report entry
   resetIncidentForm();
   switchModule(2);
 }
