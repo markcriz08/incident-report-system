@@ -286,27 +286,6 @@ function renderAllIncidentsMapMarkers() {
   }
 }
 
-// Calculate Google Maps Roadmap tile URL and exact pin percentage offsets matching Step 1
-function getGoogleTileData(lat, lng, zoom = 16) {
-  const latRad = (lat * Math.PI) / 180;
-  const n = Math.pow(2, zoom);
-  
-  const floatX = ((lng + 180) / 360) * n;
-  const floatY = (1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n;
-  
-  const xTile = Math.floor(floatX);
-  const yTile = Math.floor(floatY);
-  
-  const pixelX = (floatX - xTile) * 256;
-  const pixelY = (floatY - yTile) * 256;
-  
-  const pctX = (pixelX / 256) * 100;
-  const pctY = (pixelY / 256) * 100;
-  
-  const url = `https://mt0.google.com/vt/lyrs=m&x=${xTile}&y=${yTile}&z=${zoom}`;
-  return { url, pctX, pctY };
-}
-
 /* ==========================================================================
    STEP 2: PATIENT INFORMATION & VITALS ASSESSMENTS LOGIC
    ========================================================================== */
@@ -957,9 +936,6 @@ function buildOverviewReport() {
   updateLayerButtonsUI();
   render3DPinsForActivePatient();
 
-  // 2. GENERATE GOOGLE MAP TILE URL & EXACT PIN PERCENTAGE FOR PRINT
-  const tileData = getGoogleTileData(gisCoords.lat, gisCoords.lng, 16);
-
   container.innerHTML = `
     <div class="border-b-2 border-slate-800 pb-3 mb-3 flex justify-between items-center">
       <div>
@@ -987,14 +963,7 @@ function buildOverviewReport() {
         <span>Pinned GIS Accident Location Map</span>
         <span class="text-[10px] font-mono text-rose-600 font-semibold">Coords: ${gisCoords.lat}, ${gisCoords.lng}</span>
       </h4>
-      <div class="h-44 w-full rounded overflow-hidden border border-slate-300 relative bg-slate-200">
-        <img src="${tileData.url}" class="w-full h-full object-cover" alt="GIS Incident Map Location">
-        <div class="absolute transform -translate-x-1/2 -translate-y-1/2" style="left: ${tileData.pctX}%; top: ${tileData.pctY}%;">
-          <div class="bg-rose-600 text-white p-1 rounded-full shadow-lg border-2 border-white flex items-center justify-center">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>
-          </div>
-        </div>
-      </div>
+      <div id="overview-leaflet-map" class="h-44 w-full rounded overflow-hidden border border-slate-300 relative bg-slate-200"></div>
     </div>
 
     <!-- Patients Assessment, Vitals & First Aid Table -->
@@ -1064,6 +1033,29 @@ function buildOverviewReport() {
       </div>
     </div>
   `;
+
+  // Initialize mini Leaflet map centered precisely on the pinned GPS coordinates
+  setTimeout(() => {
+    const mapEl = document.getElementById('overview-leaflet-map');
+    if (mapEl && typeof L !== 'undefined') {
+      if (mapEl._leaflet_id) { mapEl._leaflet_id = null; }
+      const overviewMap = L.map('overview-leaflet-map', {
+        center: [gisCoords.lat, gisCoords.lng],
+        zoom: 16,
+        dragging: false,
+        zoomControl: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        boxZoom: false,
+        attributionControl: false
+      });
+      L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+      }).addTo(overviewMap);
+      L.marker([gisCoords.lat, gisCoords.lng]).addTo(overviewMap);
+      overviewMap.invalidateSize();
+    }
+  }, 150);
 }
 
 function printReport() {
