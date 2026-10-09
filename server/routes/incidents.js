@@ -5,10 +5,10 @@ router.post('/', async (req, res) => {
   try {
     const incidentData = req.body;
     const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_KEY;
+    const supabaseKey = process.env.SUPABASE_KEY || process.env.SUPABASE_SECRET_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-      console.error("Missing SUPABASE_URL or SUPABASE_SECRET_KEY in environment variables.");
+      console.error("Missing SUPABASE_URL or SUPABASE_KEY in environment variables.");
       return res.status(500).json({ success: false, error: "Server configuration error: Missing Supabase credentials." });
     }
 
