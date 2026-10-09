@@ -8,7 +8,8 @@ router.post('/', async (req, res) => {
     const supabaseKey = process.env.SUPABASE_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Supabase credentials missing in environment variables');
+      console.error("Missing SUPABASE_URL or SUPABASE_KEY in environment variables.");
+      return res.status(500).json({ success: false, error: "Server configuration error: Missing Supabase credentials." });
     }
 
     const response = await fetch(`${supabaseUrl}/rest/v1/incidents`, {
@@ -34,15 +35,22 @@ router.post('/', async (req, res) => {
       })
     });
 
-    const result = await response.json();
+    const textRes = await response.text();
+    let result;
+    try {
+      result = JSON.parse(textRes);
+    } catch (e) {
+      result = textRes;
+    }
+
     if (!response.ok) {
-      console.error('Supabase REST error:', result);
-      return res.status(400).json({ success: false, error: result });
+      console.error('Supabase error response:', result);
+      return res.status(500).json({ success: false, error: result });
     }
 
     res.status(200).json({ success: true, data: result });
   } catch (err) {
-    console.error('Server error saving incident:', err);
+    console.error('Unexpected server error during incident save:', err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
