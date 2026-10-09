@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Famy MDRRM - Emergency Incident Portal</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Leaflet CSS for GIS Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Three.js & Loaders -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
+
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    
+    <!-- Top Header & Main Module Navigation -->
+    <header class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row justify-between items-center gap-4 no-print">
+      <div class="flex items-center space-x-3">
+        <img src="assets/logo1.png" alt="System Logo" class="w-10 h-10 rounded-xl object-contain shadow-sm border border-slate-200 bg-white">
+        <div>
+          <h1 class="text-xl font-bold text-slate-800 leading-none">Famy MDRRMO INCIDENT PORTAL</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Disaster Risk Response & Road Emergency Management System</p>
+        </div>
+      </div>
+
+      <!-- Module Navigation Tabs (Modules 1 to 5) -->
+      <nav class="flex flex-wrap bg-slate-100 p-1.5 rounded-xl border border-slate-200 text-xs font-bold gap-1">
+        <button id="nav-mod-1" onclick="switchModule(1)" class="px-3 py-2 rounded-lg transition bg-white text-rose-600 shadow-sm flex items-center space-x-1.5">
+          <i data-lucide="file-plus" class="w-4 h-4"></i>
+          <span>Module 1: Incident Report</span>
+        </button>
+        <button id="nav-mod-2" onclick="switchModule(2)" class="px-3 py-2 rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center space-x-1.5">
+          <i data-lucide="file-text" class="w-4 h-4"></i>
+          <span>Module 2: View Reports</span>
+        </button>
+        <button id="nav-mod-3" onclick="switchModule(3)" class="px-3 py-2 rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center space-x-1.5">
+          <i data-lucide="map-pin" class="w-4 h-4"></i>
+          <span>Module 3: Incident Map</span>
+        </button>
+        <button id="nav-mod-4" onclick="switchModule(4)" class="px-3 py-2 rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center space-x-1.5">
+          <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+          <span>Module 4: Summary Reports</span>
+        </button>
+        <button id="nav-mod-5" onclick="switchModule(5)" class="px-3 py-2 rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center space-x-1.5">
+          <i data-lucide="settings" class="w-4 h-4"></i>
+          <span>Module 5: System Data</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- =================================================================== -->
+    <!-- MODULE 1: INCIDENT REPORT WORKFLOW                                  -->
+    <!-- =================================================================== -->
+    <div id="module-1" class="module-section">
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <!-- Sidebar Navigation: Steps 1 to 6 -->
+        <aside class="lg:col-span-1 bg-white p-4 rounded-2xl shadow-sm border border-slate-200 h-fit space-y-2 no-print">
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Report Workflow</p>
+          
+          <button id="step-btn-1" onclick="goToStep(1)" class="w-full flex items-center space-x-3 p-2.5 rounded-xl text-left transition font-semibold text-sky-600 bg-sky-50 border border-sky-200 shadow-sm">
+            <span class="w-7 h-7 rounded-lg bg-sky-600 text-white flex items-center justify-center font-bold text-xs shrink-0">1</span>
+            <div class="text-xs font-bold">Incident Context</div>
+          </button>
+
+          <button id="step-btn-2" onclick="goToStep(2)" class="w-full flex items-center space-x-3 p-2.5 rounded-xl text-left transition font-medium text-slate-600 hover:bg-slate-50 border border-transparent">
+            <span class="w-7 h-7 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs shrink-0">2</span>
+            <div class="text-xs font-bold">Patient Information</div>
+          </button>
+
+          <button id="step-btn-3" onclick="goToStep(3)" class="w-full flex items-center space-x-3 p-2.5 rounded-xl text-left transition font-medium text-slate-600 hover:bg-slate-50 border border-transparent">
+            <span class="w-7 h-7 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs shrink-0">3</span>
+            <div class="text-xs font-bold">3D Body Mapping</div>
+          </button>
+
+          <button id="step-btn-4" onclick="goToStep(4)" class="w-full flex items-center space-x-3 p-2.5 rounded-xl text-left transition font-medium text-slate-600 hover:bg-slate-50 border border-transparent">
+            <span class="w-7 h-7 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs shrink-0">4</span>
+            <div class="text-xs font-bold">Documentation Photos</div>
+          </button>
+
+          <button id="step-btn-5" onclick="goToStep(5)" class="w-full flex items-center space-x-3 p-2.5 rounded-xl text-left transition font-medium text-slate-600 hover:bg-slate-50 border border-transparent">
+            <span class="w-7 h-7 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs shrink-0">5</span>
+            <div class="text-xs font-bold">Responders & Command</div>
+          </button>
+
+          <button id="step-btn-6" onclick="goToStep(6)" class="w-full flex items-center space-x-3 p-2.5 rounded-xl text-left transition font-medium text-slate-600 hover:bg-slate-50 border border-transparent">
+            <span class="w-7 h-7 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs shrink-0">6</span>
+            <div class="text-xs font-bold text-emerald-600">Overview & Print</div>
+          </button>
+
+          <div class="pt-3 border-t border-slate-100 text-xs space-y-1.5 text-slate-500">
+            <div class="flex justify-between">
+              <span>Incident #:</span>
+              <strong id="sidebar-ir-num" class="text-rose-600 font-mono">IR-2026-001</strong>
+            </div>
+            <div class="flex justify-between">
+              <span>Total Patients:</span>
+              <strong id="sidebar-total-patients" class="text-sky-600">1</strong>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Step Workspaces -->
+        <main class="lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+          
+          <!-- STEP 1: INCIDENT CONTEXT -->
+          <section id="step-content-1">
+            <div class="mb-5">
+              <h2 class="text-lg font-bold text-slate-800">Step 1: Incident Context & Location Map</h2>
+              <p class="text-xs text-slate-500">Record incident reference number, timestamp, type, and geographic location.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 text-xs">
+              <div>
+                <label for="inc-number" class="block font-bold text-slate-700 mb-1">Incident Number</label>
+                <input type="text" id="inc-number" value="IR-2026-001" title="Incident Number" aria-label="Incident Number" placeholder="IR-2026-001" class="w-full border border-slate-300 rounded-xl px-3 py-2 font-mono font-bold text-rose-600 focus:ring-2 focus:ring-rose-500 outline-none">
+              </div>
+
+              <div>
+                <label for="inc-time" class="block font-bold text-slate-700 mb-1">Date & Time of Incident (Editable)</label>
+                <input type="datetime-local" id="inc-time" title="Date & Time of Incident" aria-label="Date and Time of Incident" class="w-full border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-sky-500 outline-none">
+              </div>
+
+              <div>
+                <label for="inc-nature" class="block font-bold text-slate-700 mb-1">Type / Nature of Incident</label>
+                <select id="inc-nature" title="Type / Nature of Incident" aria-label="Type / Nature of Incident" class="w-full border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-sky-500 outline-none">
+                  <!-- Options populated dynamically from System Data -->
+                </select>
+              </div>
+
+              <div>
+                <label for="inc-place" class="block font-bold text-slate-700 mb-1">Place of Incident (Barangay / Muni)</label>
+                <input type="text" id="inc-place" title="Place of Incident" aria-label="Place of Incident" placeholder="e.g. Brgy. Famy Junction, Siniloan-Famy Rd" class="w-full border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-sky-500 outline-none">
+              </div>
+
+              <div>
+                <label for="inc-landmark" class="block font-bold text-slate-700 mb-1">Landmark</label>
+                <input type="text" id="inc-landmark" title="Landmark" aria-label="Landmark" placeholder="e.g. Near McDonald's & Puregold Famy" class="w-full border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-sky-500 outline-none">
+              </div>
+
+              <div>
+                <label for="inc-severity" class="block font-bold text-slate-700 mb-1">Severity Level</label>
+                <select id="inc-severity" title="Severity Level" aria-label="Severity Level" class="w-full border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-sky-500 outline-none">
+                  <option value="Low">Low (Minor First Aid Needed)</option>
+                  <option value="Medium">Medium (Medical Evacuation Required)</option>
+                  <option value="High / Critical">High / Critical (Mass Casualty Call)</option>
+                  <option value="Disaster Level">Disaster Level (Multi-Agency Activation)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- GIS Map Container -->
+            <div class="mb-6">
+              <div class="flex justify-between items-center mb-1 text-xs">
+                <label class="font-bold text-slate-700">GIS Location Map Pinning</label>
+                <span id="map-coords-label" class="font-mono text-sky-600 bg-sky-50 px-2.5 py-1 rounded-md border border-sky-200">GPS Coords: 14.435439, 121.449593</span>
+              </div>
+              <div id="gis-map" class="h-80 w-full rounded-2xl border border-slate-300 overflow-hidden shadow-inner z-0"></div>
+            </div>
+
+            <div class="flex justify-end">
+              <button onclick="goToStep(2)" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-2">
+                <span>Next: Patient Information</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </section>
+
+          <!-- STEP 2: PATIENT INFORMATION -->
+          <section id="step-content-2" class="hidden">
+            <div class="flex justify-between items-center mb-5">
+              <div>
+                <h2 class="text-lg font-bold text-slate-800">Step 2: Patient Information & Assessments</h2>
+                <p class="text-xs text-slate-500">Record patient details, injury assessment, first aid interventions, and hospital transport status.</p>
+              </div>
+              <button onclick="addPatient()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Add Patient / Victim</span>
+              </button>
+            </div>
+
+            <div id="patients-container" class="space-y-4 mb-6"></div>
+
+            <div class="flex justify-between">
+              <button onclick="goToStep(1)" class="px-4 py-2 border border-slate-300 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition">Previous</button>
+              <button onclick="goToStep(3)" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-2">
+                <span>Next: 3D Body Mapping</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </section>
+
+          <!-- STEP 3: 3D BODY MAPPING -->
+          <section id="step-content-3" class="hidden">
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 mb-4 flex flex-col md:flex-row items-center justify-between gap-3 shadow-sm">
+              <div class="flex items-center space-x-3">
+                <div class="p-2 bg-rose-100 text-rose-600 rounded-xl">
+                  <i data-lucide="user-check" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <label for="active-patient-select" class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Active Patient Model</label>
+                  <select id="active-patient-select" title="Active Patient Model" aria-label="Select Active Patient Model" onchange="setActivePatient(this.value)" class="bg-white font-bold text-slate-800 text-xs border border-slate-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-rose-500 outline-none min-w-[240px]">
+                  </select>
+                </div>
+              </div>
+
+              <div class="flex bg-slate-200 p-1 rounded-xl border border-slate-300 text-xs font-semibold">
+                <button id="btn-layer-skin" onclick="switch3DLayer('skin')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-sky-600 shadow-sm flex items-center space-x-1.5">
+                  <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                  <span>External Skin</span>
+                </button>
+                <button id="btn-layer-skeleton" onclick="switch3DLayer('skeleton')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 flex items-center space-x-1.5">
+                  <i data-lucide="bone" class="w-3.5 h-3.5"></i>
+                  <span>Internal Skeleton</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div class="lg:col-span-2 bg-slate-700 rounded-2xl relative overflow-hidden min-h-[420px] shadow-inner">
+                <div id="canvas-status-text" class="absolute top-3 left-3 bg-slate-900/80 text-white text-[11px] font-medium px-3 py-1 rounded-lg backdrop-blur z-10 flex items-center space-x-2">
+                  <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                  <span id="canvas-patient-tag">Mapping: Patient #1</span>
+                </div>
+                <div id="three-container" class="w-full h-[420px]"></div>
+              </div>
+
+              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col justify-between">
+                <div>
+                  <div class="flex justify-between items-center mb-3 text-xs">
+                    <span class="font-bold text-slate-700 flex items-center space-x-1">
+                      <i data-lucide="pin" class="w-3.5 h-3.5 text-rose-500"></i>
+                      <span>Mapped Injuries</span>
+                    </span>
+                    <span id="pins-count" class="font-medium text-slate-400">0 Pin(s)</span>
+                  </div>
+                  <div id="pins-list" class="space-y-2 max-h-[300px] overflow-y-auto pr-1"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-between mt-6">
+              <button onclick="goToStep(2)" class="px-4 py-2 border border-slate-300 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition">Previous</button>
+              <button onclick="goToStep(4)" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-2">
+                <span>Next: Documentation Photos</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </section>
+
+          <!-- STEP 4: DOCUMENTATION PHOTOS -->
+          <section id="step-content-4" class="hidden">
+            <div class="mb-5">
+              <h2 class="text-lg font-bold text-slate-800">Step 4: Photo Documentation</h2>
+              <p class="text-xs text-slate-500">Upload and align scene, vehicle, and injury documentation photos.</p>
+            </div>
+
+            <!-- Upload Drop Zone -->
+            <div class="border-2 border-dashed border-slate-300 hover:border-sky-500 rounded-2xl p-6 text-center bg-slate-50 transition mb-6 cursor-pointer" onclick="document.getElementById('photo-input').click()">
+              <input type="file" id="photo-input" title="Upload Documentation Photos" aria-label="Upload Documentation Photos" multiple accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+              <div class="w-12 h-12 bg-sky-100 text-sky-600 rounded-2xl flex items-center justify-center mx-auto mb-2">
+                <i data-lucide="camera" class="w-6 h-6"></i>
+              </div>
+              <p class="text-xs font-bold text-slate-700">Click or drag photos here to upload</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">Supports PNG, JPG, WEBP (Auto-fitted thumbnail grid)</p>
+            </div>
+
+            <!-- Fixed Sized & Aligned Image Grid -->
+            <div id="photos-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <!-- Uploaded photo cards rendered here -->
+            </div>
+
+            <div class="flex justify-between">
+              <button onclick="goToStep(3)" class="px-4 py-2 border border-slate-300 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition">Previous</button>
+              <button onclick="goToStep(5)" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-2">
+                <span>Next: Responders & Command</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </section>
+
+          <!-- STEP 5: RESPONDERS & COMMAND -->
+          <section id="step-content-5" class="hidden">
+            <div class="mb-5">
+              <h2 class="text-lg font-bold text-slate-800">Step 5: Responders & Command Staff</h2>
+              <p class="text-xs text-slate-500">Assign deployed field responders and FSLRS command operators from master data lists.</p>
+            </div>
+
+            <!-- Field Responders -->
+            <div class="mb-6">
+              <div class="flex justify-between items-center mb-2">
+                <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-2">
+                  <i data-lucide="shield-alert" class="w-4 h-4 text-sky-600"></i>
+                  <span>Responders</span>
+                </h3>
+                <button onclick="addResponder()" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold transition flex items-center space-x-1">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                  <span>Add Responder</span>
+                </button>
+              </div>
+              <div id="responders-container" class="space-y-2.5"></div>
+            </div>
+
+            <!-- Command Center Personnel -->
+            <div class="mb-6">
+              <div class="flex justify-between items-center mb-2">
+                <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-2">
+                  <i data-lucide="radio" class="w-4 h-4 text-indigo-600"></i>
+                  <span>FSLRS Operators</span>
+                </h3>
+                <button onclick="addCommandPerson()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition flex items-center space-x-1">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                  <span>Add Operator</span>
+                </button>
+              </div>
+              <div id="command-container" class="space-y-2.5"></div>
+            </div>
+
+            <div class="flex justify-between">
+              <button onclick="goToStep(4)" class="px-4 py-2 border border-slate-300 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition">Previous</button>
+              <button onclick="goToStep(6)" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-2">
+                <span>Next: Overview & Print</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </section>
+
+          <!-- STEP 6: OVERVIEW & PRINT REPORT -->
+          <section id="step-content-6" class="hidden">
+            <div class="flex justify-between items-center mb-5 no-print">
+              <div>
+                <h2 class="text-lg font-bold text-slate-800">Step 6: Final Overview & Print Report</h2>
+                <p class="text-xs text-slate-500">Review complete incident summary, print formatted report, or save to database.</p>
+              </div>
+              <div class="flex space-x-2">
+                <button onclick="printReport()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
+                  <i data-lucide="printer" class="w-4 h-4"></i>
+                  <span>Print Report</span>
+                </button>
+                <button onclick="saveIncidentReport()" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-md">
+                  <i data-lucide="save" class="w-4 h-4"></i>
+                  <span>Save Incident Report</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Compact Printable Container -->
+            <div id="printable-report" class="bg-white border border-slate-200 rounded-2xl p-6 text-xs space-y-4 shadow-sm">
+              <!-- Rendered summary layout -->
+            </div>
+          </section>
+
+        </main>
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODULE 2: VIEW REPORTS                                             -->
+    <!-- =================================================================== -->
+    <div id="module-2" class="module-section hidden">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        
+        <!-- Filter Header Bar -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-slate-200">
+          <div>
+            <h2 class="text-lg font-bold text-slate-800">Module 2: View & Export Incident Reports</h2>
+            <p class="text-xs text-slate-500">Filter historical emergency incident logs by date, nature, gender, or period.</p>
+          </div>
+          
+          <div class="flex flex-wrap gap-2">
+            <button onclick="exportSelectedCSV()" class="px-3.5 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>Export Selected CSV</span>
+            </button>
+            <button onclick="exportFilteredCSV()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+              <span>Export All Filtered CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters Row -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6 text-xs bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div>
+            <label for="filter-period" class="block font-bold text-slate-600 mb-1">Filter Period</label>
+            <select id="filter-period" title="Filter Period" aria-label="Filter Period" onchange="applyReportFilters()" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none">
+              <option value="all">All Dates</option>
+              <option value="month">Current Month</option>
+              <option value="year">Current Year</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="filter-incident-type" class="block font-bold text-slate-600 mb-1">Incident Type</label>
+            <select id="filter-incident-type" title="Incident Type Filter" aria-label="Incident Type Filter" onchange="applyReportFilters()" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none">
+              <option value="all">All Incident Types</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="filter-gender" class="block font-bold text-slate-600 mb-1">Patient Gender</label>
+            <select id="filter-gender" title="Patient Gender Filter" aria-label="Patient Gender Filter" onchange="applyReportFilters()" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none">
+              <option value="all">All Genders</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="filter-search" class="block font-bold text-slate-600 mb-1">Search Keywords</label>
+            <input type="text" id="filter-search" title="Search Keywords" aria-label="Search Keywords" onkeyup="applyReportFilters()" placeholder="IR Number, Place, Patient..." class="w-full border border-slate-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none">
+          </div>
+        </div>
+
+        <!-- Reports Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                <th class="p-3"><input type="checkbox" id="select-all-reports" title="Select All Reports" aria-label="Select All Reports" onchange="toggleSelectAllReports(this.checked)"></th>
+                <th class="p-3 font-bold">IR Number</th>
+                <th class="p-3 font-bold">Date & Time</th>
+                <th class="p-3 font-bold">Nature / Type</th>
+                <th class="p-3 font-bold">Place / Landmark</th>
+                <th class="p-3 font-bold">Patients</th>
+                <th class="p-3 font-bold">Severity</th>
+                <th class="p-3 font-bold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="reports-table-body" class="divide-y divide-slate-200">
+              <!-- Rendered report rows -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODULE 3: INCIDENT MAP (MASTER GIS OVERVIEW)                         -->
+    <!-- =================================================================== -->
+    <div id="module-3" class="module-section hidden">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-200 pb-4 gap-2">
+          <div>
+            <h2 class="text-lg font-bold text-slate-800">Module 3: Master Incident Map</h2>
+            <p class="text-xs text-slate-500">Visualizes all recorded emergency incident GPS pins, location clusters, and severity details.</p>
+          </div>
+          <div class="flex items-center space-x-2 text-xs">
+            <span class="px-3 py-1 bg-rose-100 text-rose-700 font-bold rounded-lg" id="map-total-incidents-tag">Total Incidents: 0</span>
+          </div>
+        </div>
+
+        <div id="all-incidents-map" class="h-[520px] w-full rounded-2xl border border-slate-300 overflow-hidden shadow-inner z-0"></div>
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODULE 4: SUMMARY REPORTS & DASHBOARD METRICS                       -->
+    <!-- =================================================================== -->
+    <div id="module-4" class="module-section hidden">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+        
+        <div class="border-b border-slate-200 pb-4">
+          <h2 class="text-lg font-bold text-slate-800">Module 4: Incident Summary Reports & Analytics</h2>
+          <p class="text-xs text-slate-500">High-level statistical overview of emergency responses, patient counts, and incident severity distributions.</p>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+          <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex items-center space-x-3">
+            <div class="p-3 bg-rose-100 text-rose-600 rounded-xl">
+              <i data-lucide="file-spreadsheet" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Total Incidents</p>
+              <h3 id="stat-total-incidents" class="text-xl font-bold text-slate-800">0</h3>
+            </div>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex items-center space-x-3">
+            <div class="p-3 bg-sky-100 text-sky-600 rounded-xl">
+              <i data-lucide="users" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Total Patients / Victims</p>
+              <h3 id="stat-total-patients" class="text-xl font-bold text-slate-800">0</h3>
+            </div>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex items-center space-x-3">
+            <div class="p-3 bg-emerald-100 text-emerald-600 rounded-xl">
+              <i data-lucide="ambulance" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Hospital Transports</p>
+              <h3 id="stat-hospitalized" class="text-xl font-bold text-slate-800">0</h3>
+            </div>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex items-center space-x-3">
+            <div class="p-3 bg-amber-100 text-amber-600 rounded-xl">
+              <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">High / Critical Severity</p>
+              <h3 id="stat-critical-count" class="text-xl font-bold text-slate-800">0</h3>
+            </div>
+          </div>
+        </div>
+
+        <!-- Breakdown Tables -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+            <h3 class="font-bold text-slate-800 uppercase tracking-wider text-xs mb-3 flex items-center space-x-2">
+              <i data-lucide="pie-chart" class="w-4 h-4 text-sky-600"></i>
+              <span>Incident Breakdown by Nature / Type</span>
+            </h3>
+            <div id="summary-nature-list" class="space-y-2"></div>
+          </div>
+
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+            <h3 class="font-bold text-slate-800 uppercase tracking-wider text-xs mb-3 flex items-center space-x-2">
+              <i data-lucide="activity" class="w-4 h-4 text-rose-600"></i>
+              <span>Severity Level Distribution</span>
+            </h3>
+            <div id="summary-severity-list" class="space-y-2"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODULE 5: SYSTEM DATA & MASTER SETTINGS                             -->
+    <!-- =================================================================== -->
+    <div id="module-5" class="module-section hidden">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+        
+        <div class="border-b border-slate-200 pb-4">
+          <h2 class="text-lg font-bold text-slate-800">Module 5: System Data & Master Settings</h2>
+          <p class="text-xs text-slate-500">Manage lookup tables for field responders, response agencies, FSLRS operators, incident classifications, hospitals, and portal configurations.</p>
+        </div>
+
+        <!-- Master Data Grid including Agency Records -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          <!-- Field Responders Card -->
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
+                <i data-lucide="shield-alert" class="w-4 h-4 text-sky-600"></i>
+                <span>Field Responders</span>
+              </h3>
+              <button onclick="addMasterItem('responders')" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold transition">+ Add</button>
+            </div>
+            <div id="master-responders-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+          </div>
+
+          <!-- Response Agencies Card -->
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
+                <i data-lucide="building" class="w-4 h-4 text-sky-600"></i>
+                <span>Response Agencies</span>
+              </h3>
+              <button onclick="addMasterItem('agencies')" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold transition">+ Add</button>
+            </div>
+            <div id="master-agencies-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+          </div>
+
+          <!-- FSLRS Operators Card -->
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
+                <i data-lucide="radio" class="w-4 h-4 text-indigo-600"></i>
+                <span>FSLRS Operators</span>
+              </h3>
+              <button onclick="addMasterItem('operators')" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition">+ Add</button>
+            </div>
+            <div id="master-operators-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+          </div>
+
+          <!-- Incident Classifications Card -->
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
+                <i data-lucide="list" class="w-4 h-4 text-rose-600"></i>
+                <span>Incident Classifications</span>
+              </h3>
+              <button onclick="addMasterItem('incidentTypes')" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition">+ Add</button>
+            </div>
+            <div id="master-incidents-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+          </div>
+
+          <!-- Referral Hospitals Card -->
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
+                <i data-lucide="building-2" class="w-4 h-4 text-emerald-600"></i>
+                <span>Referral Hospitals</span>
+              </h3>
+              <button onclick="addMasterItem('hospitals')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition">+ Add</button>
+            </div>
+            <div id="master-hospitals-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+          </div>
+
+        </div>
+
+        <!-- System Portal Settings -->
+        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+          <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center space-x-2">
+            <i data-lucide="sliders" class="w-4 h-4 text-slate-600"></i>
+            <span>System Configurations</span>
+          </h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div>
+              <label for="sys-prefix" class="block font-bold text-slate-600 mb-1">IR Number Format Prefix</label>
+              <input type="text" id="sys-prefix" title="IR Number Format Prefix" aria-label="IR Number Format Prefix" value="IR-2026-" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none">
+            </div>
+
+            <div>
+              <label for="sys-coords" class="block font-bold text-slate-600 mb-1">Default Map Lat/Lng</label>
+              <input type="text" id="sys-coords" title="Default Map Coordinates" aria-label="Default Map Coordinates" value="14.435439, 121.449593" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none">
+            </div>
+
+            <div>
+              <label for="sys-agency" class="block font-bold text-slate-600 mb-1">Operating Agency Name</label>
+              <input type="text" id="sys-agency" title="Operating Agency Name" aria-label="Operating Agency Name" value="MDRRMO Famy Emergency Command Center" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none">
+            </div>
+          </div>
+          <div class="mt-4 flex justify-end">
+            <button onclick="saveSystemSettings()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition">Save Configurations</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Pin Details Modal -->
+  <div id="pin-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4 no-print">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+      <h3 class="text-base font-bold text-slate-800 mb-1 flex items-center space-x-2">
+        <i data-lucide="map-pin" class="w-5 h-5 text-rose-600"></i>
+        <span>Specify Injury Details</span>
+      </h3>
+      <p id="modal-patient-label" class="text-xs text-rose-600 font-semibold mb-4">Target: Unspecified Patient</p>
+      
+      <div class="space-y-3 text-xs mb-6">
+        <div>
+          <label for="modal-region" class="block font-semibold text-slate-600 mb-1">Target Region</label>
+          <input type="text" id="modal-region" title="Target Region" aria-label="Target Region" readonly class="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 font-mono text-slate-700">
+        </div>
+
+        <div>
+          <label for="modal-injury-type" class="block font-semibold text-slate-600 mb-1">Injury / Trauma Classification</label>
+          <select id="modal-injury-type" title="Injury Classification" aria-label="Injury Classification" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 outline-none">
+            <option value="Bone Fracture">Bone Fracture</option>
+            <option value="Joint Sprain / Strain">Joint Sprain / Strain</option>
+            <option value="Laceration / Deep Cut">Laceration / Deep Cut</option>
+            <option value="Contusion / Severe Bruising">Contusion / Severe Bruising</option>
+            <option value="Burn (Thermal / Chemical)">Burn (Thermal / Chemical)</option>
+            <option value="Puncture / Penetrating Wound">Puncture / Penetrating Wound</option>
+            <option value="Amputation / Crush Injury">Amputation / Crush Injury</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="modal-pin-notes" class="block font-semibold text-slate-600 mb-1">Notes / Observations</label>
+          <textarea id="modal-pin-notes" title="Notes / Observations" aria-label="Notes / Observations" rows="3" placeholder="Enter trauma notes..." class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 outline-none"></textarea>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2">
+        <button onclick="closePinModal()" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50 transition">Cancel</button>
+        <button onclick="savePinDetails()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold transition shadow-sm">Save Marker</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

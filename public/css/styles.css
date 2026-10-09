@@ -1,0 +1,55 @@
+/* Custom Application & Layout Styling */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Print Optimization Rule - Clean Print Engine for #printable-report */
+@media print {
+  /* Hide everything on the page by default */
+  body, body * {
+    visibility: hidden;
+  }
+
+  /* Make only the printable report container and its contents visible */
+  #printable-report, #printable-report * {
+    visibility: visible;
+  }
+
+  /* Position the report at the top-left of the printed page */
+  #printable-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none !important;
+    box-shadow: none !important;
+    background: white !important;
+    font-size: 10pt !important;
+    line-height: 1.3 !important;
+  }
+
+  .page-break-inside-avoid {
+    break-inside: avoid;
+  }
+}

@@ -1,0 +1,307 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 55384,
+      "max": [
+        0.5485429763793945,
+        0.09505504369735718,
+        1.729335904121399
+      ],
+      "min": [
+        -0.556145191192627,
+        -0.3644302189350128,
+        -0.0011204472975805402
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 664608,
+      "componentType": 5126,
+      "count": 55384,
+      "max": [
+        0.9999872446060181,
+        0.9999996423721313,
+        0.999991238117218
+      ],
+      "min": [
+        -0.9999871850013733,
+        -0.9999993443489075,
+        -0.9999942779541016
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 55384,
+      "max": [
+        0.9934999942779541,
+        0.9735999703407288
+      ],
+      "min": [
+        0.00930000003427267,
+        0.009600000455975533
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 318912,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 1329216,
+      "componentType": 5126,
+      "count": 4187,
+      "max": [
+        0.03939322382211685,
+        -0.11232438683509827,
+        1.6391687393188477
+      ],
+      "min": [
+        -0.04699546843767166,
+        -0.13644252717494965,
+        1.6106467247009277
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 1379460,
+      "componentType": 5126,
+      "count": 4187,
+      "max": [
+        0.9995560050010681,
+        0.4029925763607025,
+        0.9994709491729736
+      ],
+      "min": [
+        -0.9995564222335815,
+        -0.9999346137046814,
+        -0.9996160268783569
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 443072,
+      "componentType": 5126,
+      "count": 4187,
+      "max": [
+        0.991100013256073,
+        0.9763000011444092
+      ],
+      "min": [
+        0.03620000183582306,
+        0.010999999940395355
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 1275648,
+      "componentType": 5125,
+      "count": 24480,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "Kubocarte (https://sketchfab.com/Kubocarte)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/male-base-mesh-ef348e16f0d745699119826ad83319a3",
+      "title": "male base mesh"
+    },
+    "generator": "Sketchfab-13.66.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 1373568,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 476568,
+      "byteOffset": 1373568,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1429704,
+      "byteOffset": 1850136,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 3279840,
+      "uri": "scene.bin"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "middleage_cauasian_male.001",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          1.0,
+          0.95,
+          0.85,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.8348645439555757
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Eye_brown.001",
+      "pbrMetallicRoughness": {
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.7550510257216823
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "male_middleage_cauasian_male.001_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "male_Eye_brown.001_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 5,
+            "POSITION": 4,
+            "TEXCOORD_0": 6
+          },
+          "indices": 7,
+          "material": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.009999999776482582,
+        0.0,
+        0.0,
+        -0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "6e1b4cfe0f5c496788eadf5bd2a6acb2.fbx"
+    },
+    {
+      "children": [
+        3
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        4,
+        5
+      ],
+      "matrix": [
+        100.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        -1.629206793918314e-05,
+        -99.99999999999868,
+        0.0,
+        0.0,
+        99.99999999999868,
+        -1.629206793918314e-05,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "male"
+    },
+    {
+      "mesh": 0,
+      "name": "male_middleage_cauasian_male.001_0"
+    },
+    {
+      "mesh": 1,
+      "name": "male_Eye_brown.001_0"
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ]
+}
