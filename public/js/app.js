@@ -1109,7 +1109,7 @@ function resetIncidentForm() {
   goToStep(1);
 }
 
-function saveIncidentReport() {
+async function saveIncidentReport() {
   const irNumber = document.getElementById('inc-number')?.value || 'IR-2026-001';
   const dateTime = document.getElementById('inc-time')?.value || new Date().toISOString();
 
@@ -1128,11 +1128,21 @@ function saveIncidentReport() {
     commandPersonnel: JSON.parse(JSON.stringify(commandList))
   };
 
+  try {
+    const response = await fetch('/api/incidents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newReport)
+    });
+    if (!response.ok) throw new Error('Cloud sync failed');
+  } catch (err) {
+    console.error('Database sync error:', err);
+  }
+
   savedReports.unshift(newReport);
   localStorage.setItem('aegis_reports', JSON.stringify(savedReports));
 
   alert(`Incident Report ${irNumber} Saved Successfully!`);
-  
   resetIncidentForm();
   switchModule(2);
 }
