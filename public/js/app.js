@@ -1225,8 +1225,13 @@ function renderReportsTable() {
 }
 
 function viewReportRecord(id) {
-  const report = savedReports.find(r => r.id === id);
-  if (!report) return;
+  // Convert both to Number to prevent string vs number comparison failures
+  const report = savedReports.find(r => Number(r.id) === Number(id));
+  if (!report) {
+    console.error("Report not found for ID:", id, "Available reports:", savedReports);
+    alert("Error: Report record could not be found in memory.");
+    return;
+  }
 
   const modalContent = document.getElementById('view-report-modal-content');
   if (!modalContent) return;
@@ -1294,6 +1299,16 @@ function viewReportRecord(id) {
   `;
 
   document.getElementById('view-report-modal').classList.remove('hidden');
+}
+
+function exportSingleCSV(id) {
+  const report = savedReports.find(r => Number(r.id) === Number(id));
+  if (!report) {
+    console.error("Report not found for ID:", id, "Available reports:", savedReports);
+    alert("Error: Report record could not be found for export.");
+    return;
+  }
+  generateCSVDownload([report], `${report.irNumber || 'Incident'}_Report.csv`);
 }
 
 function closeViewReportModal() {
