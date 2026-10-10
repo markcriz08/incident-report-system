@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ==========================================================================
    MODULE NAVIGATION & WIZARD STEPS
    ========================================================================== */
-function switchModule(modNumber) {
+async function switchModule(modNumber) {
   currentModule = modNumber;
   [1, 2, 3, 4, 5].forEach(m => {
     const section = document.getElementById(`module-${m}`);
@@ -141,7 +141,34 @@ function switchModule(modNumber) {
   });
 
   if (modNumber === 1 && leafMap) setTimeout(() => leafMap.invalidateSize(), 200);
-  if (modNumber === 2) renderReportsTable();
+  
+  if (modNumber === 2) {
+    try {
+      const res = await fetch('/api/incidents');
+      if (res.ok) {
+        const rows = await res.json();
+        savedReports = rows.map(row => ({
+          id: row.id,
+          irNumber: row.ir_number,
+          dateTime: row.date_time,
+          nature: row.nature,
+          place: row.place,
+          landmark: row.landmark,
+          severity: row.severity,
+          gisCoordinates: row.gis_coordinates,
+          patients: row.patients || [],
+          photos: row.photos || [],
+          responders: row.responders || [],
+          commandPersonnel: row.command_personnel || []
+        }));
+        localStorage.setItem('aegis_reports', JSON.stringify(savedReports));
+      }
+    } catch (err) {
+      console.error('Error fetching live incidents:', err);
+    }
+    renderReportsTable();
+  }
+
   if (modNumber === 3) initAllIncidentsMap();
   if (modNumber === 4) renderSummaryReportsModule();
   if (modNumber === 5) renderMasterLists();
