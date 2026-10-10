@@ -86,4 +86,16 @@ router.delete('/master-data/:id', async (req, res) => {
   }
 });
 
+// Delete an incident report from Neon PostgreSQL
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query('DELETE FROM incidents WHERE id = $1', [id]);
+    res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('Error deleting incident:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;

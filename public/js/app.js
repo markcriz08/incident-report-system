@@ -1253,8 +1253,18 @@ function toggleSelectAllReports(checked) {
   document.querySelectorAll('.report-checkbox').forEach(cb => cb.checked = checked);
 }
 
-function deleteReportRecord(id) {
+async function deleteReportRecord(id) {
   if (!confirm("Are you sure you want to delete this incident report record?")) return;
+
+  try {
+    const res = await fetch(`/api/incidents/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete from database');
+  } catch (err) {
+    console.error('Error deleting report:', err);
+    alert('Error deleting report from database: ' + err.message);
+    return;
+  }
+
   savedReports = savedReports.filter(r => r.id !== id);
   localStorage.setItem('aegis_reports', JSON.stringify(savedReports));
   renderReportsTable();
