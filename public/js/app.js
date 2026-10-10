@@ -1224,8 +1224,54 @@ function renderReportsTable() {
   `).join('');
 }
 
+function renderPatientInjuryPinsHTML(pins) {
+  if (!pins || pins.length === 0) return '';
+  return `
+    <div class="mt-2 pt-2 border-t border-slate-200">
+      <span class="font-bold text-[10px] text-slate-600 uppercase">Mapped 3D Injury Pins:</span>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5 mt-1">
+        ${pins.map(pin => `
+          <div class="bg-white p-2 rounded border border-slate-200 text-[10px]">
+            <strong class="text-rose-600">${pin.region}</strong> (${pin.type})<br/>
+            <span class="text-slate-500">${pin.notes}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderPatientsModalHTML(patients) {
+  if (!patients || patients.length === 0) return '<p class="text-xs text-slate-400 italic">No patients recorded.</p>';
+  return patients.map((p, idx) => `
+    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
+      <div class="flex justify-between items-center font-bold text-slate-900 border-b border-slate-200 pb-1">
+        <span>Patient #${idx + 1}: ${p.name} (${p.age} / ${p.gender})</span>
+        <span class="text-sky-700 font-mono text-[11px]">Model Layer: ${String(p.activeLayer || 'skin').toUpperCase()} | Pins: ${p.injuryPins ? p.injuryPins.length : 0}</span>
+      </div>
+      <div class="grid grid-cols-2 gap-2 text-[11px]">
+        <div><strong>Vitals:</strong> <span class="font-mono text-sky-800">BP: ${p.bp || '120/80'} | HR: ${p.hr || '80'}bpm | SpO2: ${p.spo2 || '98'}% | ${p.gcs || 'Alert'}</span></div>
+        <div><strong>Hospitalized:</strong> ${p.hospitalized === 'Yes' ? '<span class="text-emerald-700 font-semibold">Yes (' + p.hospital + ')</span>' : 'No'}</div>
+        <div class="col-span-2"><strong>Primary Injury:</strong> ${p.injury || 'N/A'}</div>
+        <div class="col-span-2"><strong>First Aid:</strong> <span class="text-rose-700 font-semibold">${p.firstAid || 'None'}</span></div>
+      </div>
+      ${renderPatientInjuryPinsHTML(p.injuryPins)}
+    </div>
+  `).join('');
+}
+
+function renderPhotosModalHTML(photos) {
+  if (!photos || photos.length === 0) {
+    return '<p class="text-slate-400 italic col-span-full text-center py-2 text-xs">No documentation photos attached</p>';
+  }
+  return photos.map(photo => `
+    <div class="relative rounded-lg overflow-hidden border border-slate-300 bg-slate-900 aspect-square">
+      <img src="${photo.url}" class="w-full h-full object-cover" alt="Incident documentation photo">
+    </div>
+  `).join('');
+}
+
 function viewReportRecord(id) {
-  // Convert both to Number to prevent string vs number comparison failures
   const report = savedReports.find(r => Number(r.id) === Number(id));
   if (!report) {
     console.error("Report not found for ID:", id, "Available reports:", savedReports);
@@ -1235,6 +1281,8 @@ function viewReportRecord(id) {
 
   const modalContent = document.getElementById('view-report-modal-content');
   if (!modalContent) return;
+
+  const coordsStr = report.gisCoordinates ? (report.gisCoordinates.lat + ', ' + report.gisCoordinates.lng) : 'N/A';
 
   modalContent.innerHTML = `
     <div class="border-b border-slate-200 pb-3 mb-3 flex justify-between items-center">
@@ -1253,62 +1301,70 @@ function viewReportRecord(id) {
       <div><strong>Severity:</strong> <span class="px-2 py-0.5 rounded font-bold ${report.severity === 'Low' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${report.severity}</span></div>
       <div><strong>Place / Location:</strong> ${report.place}</div>
       <div><strong>Landmark:</strong> ${report.landmark}</div>
-      <div class="col-span-2 font-mono text-sky-700"><strong>GPS Coordinates:</strong> ${report.gisCoordinates ? `${report.gisCoordinates.lat},${report.gisCoordinates.lng}` : 'N/A'}</div>
+      <div class="col-span-2 font-mono text-sky-700"><strong>GPS Coordinates:</strong> ${coordsStr}</div>
     </div>
 
+    <!-- GIS Map Snapshot -->
+    <div class="border border-slate-200 rounded-xl p-3 bg-slate-50 mb-4">
+      <h4 class="font-bold text-xs text-slate-800 mb-2 flex items-center justify-between">
+        <span>Pinned GIS Accident Location Map</span>
+        <span class="text-[10px] font-mono text-rose-600 font-semibold">${coordsStr}</span>
+      </h4>
+      <div id="view-leaflet-map" class="h-40 w-full rounded-lg overflow-hidden border border-slate-300 relative bg-slate-200"></div>
+    </div>
+
+    <!-- Patient Assessments & 3D Injury Pins -->
     <div class="mb-4">
-      <h4 class="font-bold text-slate-800 border-b border-slate-200 pb-1 mb-2 uppercase text-xs">Patient Assessments & Vitals (${report.patients ? report.patients.length : 0} Patients)</h4>
-      <table class="w-full text-left text-xs border-collapse">
-        <thead>
-          <tr class="bg-slate-100 border-b border-slate-200">
-            <th class="p-1.5 font-bold">#</th>
-            <th class="p-1.5 font-bold">Name</th>
-            <th class="p-1.5 font-bold">Age/Sex</th>
-            <th class="p-1.5 font-bold">Vitals</th>
-            <th class="p-1.5 font-bold">Primary Injury / Pins</th>
-            <th class="p-1.5 font-bold">First Aid</th>
-            <th class="p-1.5 font-bold">Hospital</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-200">
-          ${(report.patients || []).map((p, idx) => `
-            <tr>
-              <td class="p-1.5">${idx + 1}</td>
-              <td class="p-1.5 font-bold text-slate-900">${p.name}</td>
-              <td class="p-1.5">${p.age} /${p.gender}</td>
-              <td class="p-1 font-mono text-sky-800">BP: ${p.bp || '120/80'} | HR: ${p.hr || '80'}bpm | SpO2: ${p.spo2 || '98'}% | ${p.gcs || 'Alert'}</td>
-              <td class="p-1.5">${p.injury} (${p.injuryPins ? p.injuryPins.length : 0} pins)</td>
-              <td class="p-1.5 text-rose-700 font-semibold">${p.firstAid || 'None'}</td>
-              <td class="p-1.5">${p.hospitalized === 'Yes' ? p.hospital : 'Not Hospitalized'}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
+      <h4 class="font-bold text-slate-800 border-b border-slate-200 pb-1 mb-2 uppercase text-xs">Patient Assessments, Vitals & 3D Injury Pins (${report.patients ? report.patients.length : 0} Patients)</h4>
+      <div class="space-y-3">
+        ${renderPatientsModalHTML(report.patients)}
+      </div>
+    </div>
+
+    <!-- Documentation Photos -->
+    <div class="border border-slate-200 rounded-xl p-3 bg-slate-50 mb-4">
+      <h4 class="font-bold text-xs text-slate-800 mb-2 uppercase">Documentation Photos (${report.photos ? report.photos.length : 0})</h4>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+        ${renderPhotosModalHTML(report.photos)}
+      </div>
     </div>
 
     <div class="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200">
       <div>
         <h4 class="font-bold border-b border-slate-200 pb-1 mb-1 text-slate-700 uppercase">Field Responders</h4>
-        ${(report.responders || []).map(r => `<div>• <strong>${r.name}</strong> (${r.agency} -${r.role})</div>`).join('') || '<div class="text-slate-400 italic">None recorded</div>'}
+        ${(report.responders || []).map(r => '<div>• <strong>' + r.name + '</strong> (' + r.agency + ' - ' + r.role + ')</div>').join('') || '<div class="text-slate-400 italic">None recorded</div>'}
       </div>
       <div>
         <h4 class="font-bold border-b border-slate-200 pb-1 mb-1 text-slate-700 uppercase">Command Operators</h4>
-        ${(report.commandPersonnel || []).map(c => `<div>• <strong>${c.name}</strong> (${c.role})</div>`).join('') || '<div class="text-slate-400 italic">None recorded</div>'}
+        ${(report.commandPersonnel || []).map(c => '<div>• <strong>' + c.name + '</strong> (' + c.role + ')</div>').join('') || '<div class="text-slate-400 italic">None recorded</div>'}
       </div>
     </div>
   `;
 
   document.getElementById('view-report-modal').classList.remove('hidden');
-}
 
-function exportSingleCSV(id) {
-  const report = savedReports.find(r => Number(r.id) === Number(id));
-  if (!report) {
-    console.error("Report not found for ID:", id, "Available reports:", savedReports);
-    alert("Error: Report record could not be found for export.");
-    return;
-  }
-  generateCSVDownload([report], `${report.irNumber || 'Incident'}_Report.csv`);
+  // Initialize Leaflet Map inside View Modal
+  setTimeout(() => {
+    const mapEl = document.getElementById('view-leaflet-map');
+    if (mapEl && typeof L !== 'undefined' && report.gisCoordinates) {
+      if (mapEl._leaflet_id) { mapEl._leaflet_id = null; }
+      const viewMap = L.map('view-leaflet-map', {
+        center: [report.gisCoordinates.lat, report.gisCoordinates.lng],
+        zoom: 16,
+        dragging: false,
+        zoomControl: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        boxZoom: false,
+        attributionControl: false
+      });
+      L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+      }).addTo(viewMap);
+      L.marker([report.gisCoordinates.lat, report.gisCoordinates.lng]).addTo(viewMap);
+      viewMap.invalidateSize();
+    }
+  }, 150);
 }
 
 function closeViewReportModal() {
@@ -1365,7 +1421,7 @@ async function deleteReportRecord(id) {
 
 // ROBUST CSV EXPORT ENGINE
 function exportSingleCSV(id) {
-  const report = savedReports.find(r => r.id === id);
+  const report = savedReports.find(r => Number(r.id) === Number(id));
   if (!report) return;
   generateCSVDownload([report], `${report.irNumber}_Report.csv`);
 }
@@ -1376,7 +1432,6 @@ function exportSelectedCSV() {
   if (checkedIds.length > 0) {
     selected = savedReports.filter(r => checkedIds.includes(r.id));
   } else {
-    // If no checkboxes are checked, automatically export all currently filtered reports
     selected = filterReportsData();
   }
   if (selected.length === 0) return alert("No incident reports available to export.");
