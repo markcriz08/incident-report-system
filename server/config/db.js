@@ -1,13 +1,15 @@
-const { createClient } = require('@supabase/supabase-js');
+const { Pool } = require('pg');
 require('dotenv').config();
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const connectionString = process.env.DATABASE_URL?.trim();
 
-if (!supabaseUrl || !supabaseKey) {
-  console.warn("⚠️ Warning: Supabase URL or Key not found in environment variables.");
+if (!connectionString) {
+  console.warn("⚠️ Warning: DATABASE_URL not found in environment variables.");
 }
 
-const supabase = createClient(supabaseUrl || '', supabaseKey || '');
+const pool = new Pool({
+  connectionString: connectionString,
+  ssl: { rejectUnauthorized: false }
+});
 
-module.exports = supabase;
+module.exports = pool;
