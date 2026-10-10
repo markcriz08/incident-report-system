@@ -47,4 +47,43 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Get master data from Neon PostgreSQL
+router.get('/master-data', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM system_master_data');
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching master data:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Save/Sync master data to Neon PostgreSQL
+router.post('/master-data', async (req, res) => {
+  try {
+    const { category, itemValue } = req.body;
+    const query = `
+      INSERT INTO system_master_data (category, item_value) 
+      VALUES ($1, $2) RETURNING *;
+    `;
+    const result = await pool.query(query, [category, itemValue]);
+    res.status(200).json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    console.error('Error saving master data:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Delete master data item
+router.delete('/master-data/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query('DELETE FROM system_master_data WHERE id = $1', [id]);
+    res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('Error deleting master data:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;

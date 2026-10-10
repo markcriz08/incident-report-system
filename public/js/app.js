@@ -49,6 +49,8 @@ let skinModelGroup = null;
 let skeletonModelGroup = null;
 let pinMarkersGroup = new THREE.Group();
 
+let dbMasterRows = []; // Stores database rows for Module 5 sync
+
 // Master Reference Data & System Storage
 let savedReports = JSON.parse(localStorage.getItem('aegis_reports') || '[]');
 let masterData = JSON.parse(localStorage.getItem('aegis_master_data') || JSON.stringify({
@@ -171,7 +173,26 @@ async function switchModule(modNumber) {
 
   if (modNumber === 3) initAllIncidentsMap();
   if (modNumber === 4) renderSummaryReportsModule();
-  if (modNumber === 5) renderMasterLists();
+  
+  if (modNumber === 5) {
+    try {
+      const res = await fetch('/api/incidents/master-data');
+      if (res.ok) {
+        dbMasterRows = await res.json();
+        if (dbMasterRows.length > 0) {
+          masterData.responders = dbMasterRows.filter(r => r.category === 'responder').map(r => r.item_value);
+          masterData.agencies = dbMasterRows.filter(r => r.category === 'agency').map(r => r.item_value);
+          masterData.operators = dbMasterRows.filter(r => r.category === 'operator').map(r => r.item_value);
+          masterData.incidentTypes = dbMasterRows.filter(r => r.category === 'incident_type').map(r => r.item_value);
+          masterData.hospitals = dbMasterRows.filter(r => r.category === 'hospital').map(r => r.item_value);
+          localStorage.setItem('aegis_master_data', JSON.stringify(masterData));
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching master data from server:', err);
+    }
+    renderMasterLists();
+  }
 }
 
 function goToStep(step) {
@@ -1412,23 +1433,56 @@ function renderMasterLists() {
   }
 }
 
-function addMasterItem(category) {
+async function addMasterItem(category) {
   const val = prompt(`Enter new entry for ${category}:`);
   if (!val || !val.trim()) return;
-  masterData[category].push(val.trim());
-  localStorage.setItem('aegis_master_data', JSON.stringify(masterData));
-  
-  renderMasterLists();
-  populateDropdownsFromMaster();
-  renderRespondersList();
-  renderCommandList();
+
+  const dbCategoryMap = {
+    responders: 'responder',
+    agencies: 'agency',
+    operators: 'operator',
+    incidentTypes: 'incident_type',
+    hospitals: 'hospital'
+  };
+
+  try {
+    const res = await fetch('/api/incidents/master-data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category: dbCategoryMap[category] || category, itemValue: val.trim() })
+    });
+    if (res.ok) {
+      masterData[category].push(val.trim());
+      localStorage.setItem('aegis_master_data', JSON.stringify(masterData));
+      renderMasterLists();
+      populateDropdownsFromMaster();
+      renderRespondersList();
+      renderCommandList();
+    }
+  } catch (err) {
+    console.error('Error saving master item:', err);
+    masterData[category].push(val.trim());
+    localStorage.setItem('aegis_master_data', JSON.stringify(masterData));
+    renderMasterLists();
+  }
 }
 
-function deleteMasterItem(category, index) {
+async function deleteMasterItem(category, index) {
   if (!confirm("Delete this reference item?")) return;
+  const itemVal = masterData[category][index];
+  const dbCat = { responders: 'responder', agencies: 'agency', operators: 'operator', incidentTypes: 'incident_type', hospitals: 'hospital' }[category];
+
+  const dbRow = dbMasterRows.find(r => r.category === dbCat && r.item_value === itemVal);
+  if (dbRow) {
+    try {
+      await fetch(`/api/incidents/master-data/${dbRow.id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.error('Error deleting from server:', err);
+    }
+  }
+
   masterData[category].splice(index, 1);
   localStorage.setItem('aegis_master_data', JSON.stringify(masterData));
-  
   renderMasterLists();
   populateDropdownsFromMaster();
   renderRespondersList();
