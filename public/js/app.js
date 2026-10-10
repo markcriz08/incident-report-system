@@ -794,13 +794,13 @@ function updateLayerButtonsUI() {
   if (currentLayer === 'skin') {
     if (skinModelGroup) skinModelGroup.visible = true;
     if (skeletonModelGroup) skeletonModelGroup.visible = false;
-    if (btnSkin) btnSkin.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-sky-600 shadow-sm flex items-center space-x-1.5";
-    if (btnSkeleton) btnSkeleton.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 flex items-center space-x-1.5";
+    if (btnSkin) btnSkin.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-sky-600 text-white shadow-sm flex items-center space-x-1.5";
+    if (btnSkeleton) btnSkeleton.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900 flex items-center space-x-1.5";
   } else {
     if (skinModelGroup) skinModelGroup.visible = false;
     if (skeletonModelGroup) skeletonModelGroup.visible = true;
-    if (btnSkeleton) btnSkeleton.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-indigo-600 shadow-sm flex items-center space-x-1.5";
-    if (btnSkin) btnSkin.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 flex items-center space-x-1.5";
+    if (btnSkeleton) btnSkeleton.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-sky-600 text-white shadow-sm flex items-center space-x-1.5";
+    if (btnSkin) btnSkin.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900 flex items-center space-x-1.5";
   }
 }
 
@@ -953,7 +953,6 @@ function buildOverviewReport() {
   const landmark = document.getElementById('inc-landmark')?.value || 'Near in Youmi Sari sari';
   const severity = document.getElementById('inc-severity')?.value || 'Low';
 
-  // 1. GENERATE PER-PATIENT 3D BODY SNAPSHOTS USING EACH PATIENT'S MODEL LAYER
   const initialActiveId = activePatientId;
   const patient3dSnapshots = patientsList.map((p) => {
     activePatientId = p.id;
@@ -977,7 +976,6 @@ function buildOverviewReport() {
     };
   });
 
-  // Restore initial active patient state
   activePatientId = initialActiveId;
   const initialPatient = getActivePatient();
   currentLayer = initialPatient ? (initialPatient.activeLayer || 'skin') : 'skin';
@@ -1082,7 +1080,6 @@ function buildOverviewReport() {
     </div>
   `;
 
-  // Initialize mini Leaflet map centered precisely on the pinned GPS coordinates
   setTimeout(() => {
     const mapEl = document.getElementById('overview-leaflet-map');
     if (mapEl && typeof L !== 'undefined') {
@@ -1196,7 +1193,7 @@ async function saveIncidentReport() {
 }
 
 /* ==========================================================================
-   MODULE 2: VIEW & EXPORT REPORTS ENGINE
+   MODULE 2: VIEW & EXPORT REPORTS ENGINE (WITH VIEW MODAL & ROBUST CSV)
    ========================================================================== */
 function renderReportsTable() {
   const container = document.getElementById('reports-table-body');
@@ -1219,11 +1216,92 @@ function renderReportsTable() {
       <td class="p-3">${r.patients.length} Patient(s)</td>
       <td class="p-3"><span class="px-2 py-0.5 rounded-md font-bold ${r.severity === 'Low' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${r.severity}</span></td>
       <td class="p-3 text-right space-x-1">
-        <button onclick="exportSingleCSV(${r.id})" class="px-2 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded text-[11px] font-bold">CSV</button>
-        <button onclick="deleteReportRecord(${r.id})" class="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-[11px] font-bold">Delete</button>
+        <button onclick="viewReportRecord(${r.id})" class="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-[11px] font-bold shadow-sm">View</button>
+        <button onclick="exportSingleCSV(${r.id})" class="px-2 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded text-[11px] font-bold shadow-sm">CSV</button>
+        <button onclick="deleteReportRecord(${r.id})" class="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-[11px] font-bold shadow-sm">Delete</button>
       </td>
     </tr>
   `).join('');
+}
+
+function viewReportRecord(id) {
+  const report = savedReports.find(r => r.id === id);
+  if (!report) return;
+
+  const modalContent = document.getElementById('view-report-modal-content');
+  if (!modalContent) return;
+
+  modalContent.innerHTML = `
+    <div class="border-b border-slate-200 pb-3 mb-3 flex justify-between items-center">
+      <div>
+        <h2 class="text-sm font-extrabold text-slate-900 uppercase">${masterData.settings.agency || 'MDRRMO FAMY EMERGENCY COMMAND CENTER'}</h2>
+        <p class="text-[10px] text-slate-500">Official Emergency Incident Report Details</p>
+      </div>
+      <div class="text-right">
+        <span class="text-sm font-bold font-mono text-rose-600">${report.irNumber}</span>
+        <p class="text-[10px] text-slate-400">Date/Time: ${new Date(report.dateTime).toLocaleString()}</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs mb-4">
+      <div><strong>Nature / Type:</strong> ${report.nature}</div>
+      <div><strong>Severity:</strong> <span class="px-2 py-0.5 rounded font-bold ${report.severity === 'Low' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${report.severity}</span></div>
+      <div><strong>Place / Location:</strong> ${report.place}</div>
+      <div><strong>Landmark:</strong> ${report.landmark}</div>
+      <div class="col-span-2 font-mono text-sky-700"><strong>GPS Coordinates:</strong> ${report.gisCoordinates ? `${report.gisCoordinates.lat},${report.gisCoordinates.lng}` : 'N/A'}</div>
+    </div>
+
+    <div class="mb-4">
+      <h4 class="font-bold text-slate-800 border-b border-slate-200 pb-1 mb-2 uppercase text-xs">Patient Assessments & Vitals (${report.patients ? report.patients.length : 0} Patients)</h4>
+      <table class="w-full text-left text-xs border-collapse">
+        <thead>
+          <tr class="bg-slate-100 border-b border-slate-200">
+            <th class="p-1.5 font-bold">#</th>
+            <th class="p-1.5 font-bold">Name</th>
+            <th class="p-1.5 font-bold">Age/Sex</th>
+            <th class="p-1.5 font-bold">Vitals</th>
+            <th class="p-1.5 font-bold">Primary Injury / Pins</th>
+            <th class="p-1.5 font-bold">First Aid</th>
+            <th class="p-1.5 font-bold">Hospital</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200">
+          ${(report.patients || []).map((p, idx) => `
+            <tr>
+              <td class="p-1.5">${idx + 1}</td>
+              <td class="p-1.5 font-bold text-slate-900">${p.name}</td>
+              <td class="p-1.5">${p.age} /${p.gender}</td>
+              <td class="p-1 font-mono text-sky-800">BP: ${p.bp || '120/80'} | HR: ${p.hr || '80'}bpm | SpO2: ${p.spo2 || '98'}% | ${p.gcs || 'Alert'}</td>
+              <td class="p-1.5">${p.injury} (${p.injuryPins ? p.injuryPins.length : 0} pins)</td>
+              <td class="p-1.5 text-rose-700 font-semibold">${p.firstAid || 'None'}</td>
+              <td class="p-1.5">${p.hospitalized === 'Yes' ? p.hospital : 'Not Hospitalized'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200">
+      <div>
+        <h4 class="font-bold border-b border-slate-200 pb-1 mb-1 text-slate-700 uppercase">Field Responders</h4>
+        ${(report.responders || []).map(r => `<div>• <strong>${r.name}</strong> (${r.agency} -${r.role})</div>`).join('') || '<div class="text-slate-400 italic">None recorded</div>'}
+      </div>
+      <div>
+        <h4 class="font-bold border-b border-slate-200 pb-1 mb-1 text-slate-700 uppercase">Command Operators</h4>
+        ${(report.commandPersonnel || []).map(c => `<div>• <strong>${c.name}</strong> (${c.role})</div>`).join('') || '<div class="text-slate-400 italic">None recorded</div>'}
+      </div>
+    </div>
+  `;
+
+  document.getElementById('view-report-modal').classList.remove('hidden');
+}
+
+function closeViewReportModal() {
+  document.getElementById('view-report-modal').classList.add('hidden');
+}
+
+function printViewedReport() {
+  window.print();
 }
 
 function filterReportsData() {
@@ -1270,7 +1348,7 @@ async function deleteReportRecord(id) {
   renderReportsTable();
 }
 
-// CSV EXPORT ENGINE
+// ROBUST CSV EXPORT ENGINE
 function exportSingleCSV(id) {
   const report = savedReports.find(r => r.id === id);
   if (!report) return;
@@ -1279,8 +1357,14 @@ function exportSingleCSV(id) {
 
 function exportSelectedCSV() {
   const checkedIds = Array.from(document.querySelectorAll('.report-checkbox:checked')).map(cb => parseInt(cb.value));
-  if (checkedIds.length === 0) return alert("Please select at least one report to export.");
-  const selected = savedReports.filter(r => checkedIds.includes(r.id));
+  let selected = [];
+  if (checkedIds.length > 0) {
+    selected = savedReports.filter(r => checkedIds.includes(r.id));
+  } else {
+    // If no checkboxes are checked, automatically export all currently filtered reports
+    selected = filterReportsData();
+  }
+  if (selected.length === 0) return alert("No incident reports available to export.");
   generateCSVDownload(selected, `Selected_Incidents_Export.csv`);
 }
 
@@ -1293,18 +1377,22 @@ function exportFilteredCSV() {
 function generateCSVDownload(reports, filename) {
   let csv = 'IR Number,Date Time,Nature,Place,Landmark,Severity,Patients Count,Patients Details,Vitals,First Aid Interventions\n';
   reports.forEach(r => {
-    const pDetails = r.patients.map(p => `${p.name} (${p.age}/${p.gender} - Hospitalized: ${p.hospitalized})`).join('; ');
-    const vitalsDetails = r.patients.map(p => `${p.name}: [BP: ${p.bp || '120/80'}, HR: ${p.hr || '80'}bpm, SpO2: ${p.spo2 || '98'}%, GCS: ${p.gcs || 'Alert'}]`).join('; ');
-    const faDetails = r.patients.map(p => `${p.name}: ${p.firstAid || 'None'}`).join('; ');
-    csv += `"${r.irNumber}","${r.dateTime}","${r.nature}","${r.place}","${r.landmark}","${r.severity}",${r.patients.length},"${pDetails}","${vitalsDetails}","${faDetails}"\n`;
+    const pDetails = (r.patients || []).map(p => `${p.name} (${p.age}/${p.gender} - Hospitalized: ${p.hospitalized})`).join('; ');
+    const vitalsDetails = (r.patients || []).map(p => `${p.name}: [BP: ${p.bp || '120/80'}, HR: ${p.hr || '80'}bpm, SpO2: ${p.spo2 || '98'}%, GCS: ${p.gcs || 'Alert'}]`).join('; ');
+    const faDetails = (r.patients || []).map(p => `${p.name}: ${p.firstAid || 'None'}`).join('; ');
+    
+    csv += `"${r.irNumber || ''}","${r.dateTime || ''}","${r.nature || ''}","${r.place || ''}","${r.landmark || ''}","${r.severity || ''}",${r.patients ? r.patients.length : 0},"${pDetails}","${vitalsDetails}","${faDetails}"\n`;
   });
 
-  const blob = new Blob([csv], { type: 'text/csv' });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.setAttribute('href', url);
   a.setAttribute('download', filename);
+  a.style.display = 'none';
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
 }
 
 /* ==========================================================================
