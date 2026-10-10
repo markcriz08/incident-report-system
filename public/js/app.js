@@ -1451,19 +1451,21 @@ async function addMasterItem(category) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ category: dbCategoryMap[category] || category, itemValue: val.trim() })
     });
-    if (res.ok) {
-      masterData[category].push(val.trim());
-      localStorage.setItem('aegis_master_data', JSON.stringify(masterData));
-      renderMasterLists();
-      populateDropdownsFromMaster();
-      renderRespondersList();
-      renderCommandList();
+    
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to save to database');
     }
-  } catch (err) {
-    console.error('Error saving master item:', err);
+
     masterData[category].push(val.trim());
     localStorage.setItem('aegis_master_data', JSON.stringify(masterData));
     renderMasterLists();
+    populateDropdownsFromMaster();
+    renderRespondersList();
+    renderCommandList();
+  } catch (err) {
+    console.error('Error saving master item:', err);
+    alert('Database save failed: ' + err.message);
   }
 }
 
