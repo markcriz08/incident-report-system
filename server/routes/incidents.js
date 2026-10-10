@@ -1,25 +1,54 @@
 const express = require('express');
 const router = express.Router();
-const supabase = require('../config/db');
 
-// Get all reports
+// Get all reports from Supabase
 router.get('/', async (req, res) => {
   try {
-    const { data, error } = await supabase.from('incidents').select('*').order('created_at', { ascending: false });
-    if (error) throw error;
+    const supabaseUrl = process.env.SUPABASE_URL?.trim();
+    const supabaseKey = (process.env.SUPABASE_KEY || process.env.SUPABASE_SECRET_KEY)?.trim();
+
+    if (!supabaseUrl || !supabaseKey) {
+      return res.status(500).json({ error: "Missing Supabase configuration." });
+    }
+
+    const response = await fetch(`${supabaseUrl}/rest/v1/incidents?select=*&order=created_at.desc`, {
+      method: 'GET',
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`
+      }
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(JSON.stringify(data));
     res.json(data);
   } catch (err) {
+    console.error('Supabase fetch error:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// Save a new report
+// Save a new report to Supabase
 router.post('/', async (req, res) => {
   try {
     const report = req.body;
-    const { data, error } = await supabase.from('incidents').insert([
-      {
-        id: report.id || Date.now(),
+    const supabaseUrl = process.env.SUPABASE_URL?.trim();
+    const supabaseKey = (process.env.SUPABASE_KEY || process.env.SUPABASE_SECRET_KEY)?.trim();
+
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("Missing SUPABASE_URL or SUPABASE_KEY in environment variables.");
+      return res.status(500).json({ success: false, error: "Server configuration error: Missing Supabase credentials." });
+    }
+
+    const response = await fetch(`${supabaseUrl}/rest/v1/incidents`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
         ir_number: report.irNumber,
         date_time: report.dateTime,
         nature: report.nature,
@@ -31,13 +60,26 @@ router.post('/', async (req, res) => {
         photos: report.photos,
         responders: report.responders,
         command_personnel: report.commandPersonnel
-      }
-    ]);
+      })
+    });
 
-    if (error) throw error;
-    res.json({ success: true, data });
+    const textRes = await response.text();
+    let result;
+    try {
+      result = JSON.parse(textRes);
+    } catch (e) {
+      result = textRes;
+    }
+
+    if (!response.ok) {
+      console.error('Supabase error response:', result);
+      return res.status(500).json({ success: false, error: result });
+    }
+
+    res.status(200).json({ success: true, data: result });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Unexpected server error during incident save:', err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
