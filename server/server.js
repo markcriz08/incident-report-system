@@ -9,7 +9,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json());
+
+// Increase body parser payload size limit to handle photos and 3D model snapshots
+app.use(express.json({ limit: '200mb' }));
+app.use(express.urlencoded({ limit: '200mb', extended: true }));
 
 // Serve static frontend files from /public
 app.use(express.static(path.join(__dirname, '../public')));
