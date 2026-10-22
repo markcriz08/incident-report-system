@@ -8,7 +8,11 @@ const incidentRoutes = require('./routes/incidents');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// Enable CORS for all origins or your Vercel frontend domain
+app.use(cors({
+  origin: '*',
+  credentials: true
+}));
 
 // Increase body parser payload size limit to handle photos and 3D model snapshots
 app.use(express.json({ limit: '200mb' }));

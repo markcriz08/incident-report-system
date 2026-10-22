@@ -1,6 +1,10 @@
 /* ==========================================================================
    Famy MDRRMO - Full Application Client Logic (Modules 1 to 5)
    ========================================================================== */
+// TOP OF public/js/app.js
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? '' 
+  : 'https://incident-report-system-hw3b.onrender.com'; // <--- Replace with your actual Render URL
 
 // Helper Function: Sanitize strings from GLTF or input
 function sanitizeText(str) {
@@ -146,7 +150,7 @@ async function switchModule(modNumber) {
   
   if (modNumber === 2) {
     try {
-      const res = await fetch('/api/incidents');
+      const res = await fetch(`${API_BASE_URL}/api/incidents/master-data`);
       if (res.ok) {
         const rows = await res.json();
         savedReports = rows.map(row => ({
@@ -176,7 +180,7 @@ async function switchModule(modNumber) {
   
   if (modNumber === 5) {
     try {
-      const res = await fetch('/api/incidents/master-data');
+      const res = await fetch(`${API_BASE_URL}/api/incidents/master-data`);
       if (res.ok) {
         dbMasterRows = await res.json();
         if (dbMasterRows.length > 0) {
@@ -1034,7 +1038,7 @@ function buildOverviewReport() {
               <td class="p-1">${i + 1}</td>
               <td class="p-1 font-bold text-slate-900">${p.name}</td>
               <td class="p-1">${p.age} /${p.gender}</td>
-              <td class="p-1 font-mono text-sky-800">BP: ${p.bp || '120/80'} | HR: ${p.hr || '80'}bpm | SpO2: ${p.spo2 || '98'}% | ${p.gcs || 'Alert'}</td>
+              <td class="p-1 font-mono text-sky-800">BP: ${p.bp \vert{}\vert{} '120/80'} \vert{} HR:${p.hr || '80'}bpm | SpO2: ${p.spo2 \vert{}\vert{} '98'}\% \vert{}${p.gcs || 'Alert'}</td>
               <td class="p-1">${p.injury} (${p.injuryPins.length} pins)</td>
               <td class="p-1 text-rose-700 font-semibold">${p.firstAid || 'N/A'}</td>
               <td class="p-1 font-semibold">${p.hospitalized}</td>
@@ -1174,7 +1178,7 @@ async function saveIncidentReport() {
   };
 
   try {
-    const response = await fetch('/api/incidents', {
+    const response = await fetch(`${API_BASE_URL}/api/incidents`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newReport)
@@ -1406,7 +1410,7 @@ async function deleteReportRecord(id) {
   if (!confirm("Are you sure you want to delete this incident report record?")) return;
 
   try {
-    const res = await fetch(`/api/incidents/${id}`, { method: 'DELETE' });
+    const res = await fetch(`${API_BASE_URL}/api/incidents/${id}`, { method: 'DELETE' });
     if (!res.ok) throw new Error('Failed to delete from database');
   } catch (err) {
     console.error('Error deleting report:', err);
@@ -1614,7 +1618,7 @@ async function addMasterItem(category) {
   };
 
   try {
-    const res = await fetch('/api/incidents/master-data', {
+    const res = await fetch(`${API_BASE_URL}/api/incidents/master-data`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ category: dbCategoryMap[category] || category, itemValue: val.trim() })
@@ -1645,7 +1649,7 @@ async function deleteMasterItem(category, index) {
   const dbRow = dbMasterRows.find(r => r.category === dbCat && r.item_value === itemVal);
   if (dbRow) {
     try {
-      await fetch(`/api/incidents/master-data/${dbRow.id}`, { method: 'DELETE' });
+      await fetch(`${API_BASE_URL}/api/incidents/master-data/${dbRow.id}`, { method: 'DELETE' });
     } catch (err) {
       console.error('Error deleting from server:', err);
     }
