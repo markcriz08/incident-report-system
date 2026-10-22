@@ -8,9 +8,13 @@ const incidentRoutes = require('./routes/incidents');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Enable CORS for all origins or your Vercel frontend domain
+// Enable CORS for your Netlify frontend and local development
 app.use(cors({
-  origin: '*',
+  origin: [
+    'https://incident-report-system.netlify.app',
+    'http://localhost:3000',
+    'http://localhost:5000'
+  ],
   credentials: true
 }));
 
