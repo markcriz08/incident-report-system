@@ -2,8 +2,8 @@
    Famy MDRRMO - Full Application Client Logic (Modules 1 to 5)
    ========================================================================== */
 // TOP OF public/js/app.js
-const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? '' 
+  const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:5000'
   : 'https://incident-report-system-hw3b.onrender.com'; // <--- Replace with your actual Render URL
 
 // Helper Function: Sanitize strings from GLTF or input
@@ -1038,7 +1038,7 @@ function buildOverviewReport() {
               <td class="p-1">${i + 1}</td>
               <td class="p-1 font-bold text-slate-900">${p.name}</td>
               <td class="p-1">${p.age} /${p.gender}</td>
-              <td class="p-1 font-mono text-sky-800">BP: ${p.bp \vert{}\vert{} '120/80'} \vert{} HR:${p.hr || '80'}bpm | SpO2: ${p.spo2 \vert{}\vert{} '98'}\% \vert{}${p.gcs || 'Alert'}</td>
+              <td class="p-1 font-mono text-sky-800">BP: ${p.bp || '120/80'} | HR: ${p.hr || '80'}bpm | SpO2: ${p.spo2 || '98'}% | ${p.gcs || 'Alert'}</td>
               <td class="p-1">${p.injury} (${p.injuryPins.length} pins)</td>
               <td class="p-1 text-rose-700 font-semibold">${p.firstAid || 'N/A'}</td>
               <td class="p-1 font-semibold">${p.hospitalized}</td>
