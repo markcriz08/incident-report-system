@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Famy Incident Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+  <main class="shell">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark">FM</div><div><strong>Famy MDRRMO</strong><span>Incident System</span></div></div>
+      <nav>
+        <a class="active" href="dashboard.html"><span>◫</span> Dashboard</a>
+        <a href="index.html"><span>＋</span> Incident Details</a>
+        <a href="index.html#map"><span>⌖</span> Hazard Map</a>
+        <a href="index.html#settings"><span>⚙</span> System Settings</a>
+      </nav>
+      <div class="municipality">MUNICIPALITY OF FAMY<br><b>LAGUNA, PHILIPPINES</b></div>
+    </aside>
+
+    <section class="content">
+      <header class="topbar"><div><p>COMMAND OVERVIEW</p><h1>Incident Dashboard</h1></div><div class="status"><span></span> Live Database <strong id="last-updated">Updating...</strong></div></header>
+
+      <div class="filters">
+        <label>Reporting period<select id="period"><option value="all">All time</option><option value="month">This month</option><option value="year">This year</option></select></label>
+        <label>Incident type<select id="type-filter"><option value="all">All incident types</option></select></label>
+        <button id="refresh">↻ Refresh</button>
+      </div>
+
+      <section class="metrics">
+        <article><span class="icon blue">▣</span><div><p>Total incidents</p><h2 id="total-incidents">0</h2><small id="incident-trend">Live total</small></div></article>
+        <article><span class="icon violet">♟</span><div><p>Total victims</p><h2 id="total-victims">0</h2><small>Recorded patients</small></div></article>
+        <article><span class="icon amber">＋</span><div><p>Hospital transports</p><h2 id="hospital-transports">0</h2><small>Referral cases</small></div></article>
+        <article><span class="icon red">▲</span><div><p>High / critical</p><h2 id="critical-count">0</h2><small>Needs immediate attention</small></div></article>
+      </section>
+
+      <section class="grid">
+        <article class="panel chart-panel">
+          <div class="panel-head"><div><p>INCIDENT DISTRIBUTION</p><h3>By incident type</h3></div><span id="chart-total">0 records</span></div>
+          <canvas id="incident-chart" height="260"></canvas>
+        </article>
+
+        <article class="panel map-panel">
+          <div class="panel-head"><div><p>GEOGRAPHIC OVERVIEW</p><h3>Incident location map</h3></div><div class="legend" id="legend"></div></div>
+          <div id="incident-map"></div>
+        </article>
+      </section>
+
+      <section class="panel recent-panel">
+        <div class="panel-head"><div><p>LATEST ACTIVITY</p><h3>Recent incidents</h3></div><a href="index.html#reports">View all</a></div>
+        <div class="table-wrap"><table><thead><tr><th>IR Number</th><th>Incident</th><th>Location</th><th>Severity</th><th>Reported</th></tr></thead><tbody id="recent-rows"></tbody></table></div>
+      </section>
+    </section>
+  </main>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

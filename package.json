@@ -2,10 +2,36 @@
   "name": "incident-report-system",
   "version": "1.0.0",
   "description": "Famy MDRRMO Smart Incident & 3D Medical Mapping Platform",
-  "main": "server/server.js",
+  "main": "electron/main.js",
   "scripts": {
     "start": "node server/server.js",
-    "dev": "nodemon server/server.js"
+    "dev": "nodemon server/server.js",
+    "desktop": "electron .",
+    "desktop:dist": "electron-builder --win nsis",
+    "viewer": "node server/server.js",
+    "db:init": "node db/init.js"
+  },
+  "build": {
+    "appId": "gov.ph.famy.incident-report",
+    "productName": "Famy Incident Report System",
+    "directories": { "output": "C:\\Users\\markc\\IR-System-Dist" },
+    "files": [
+      "electron/**/*",
+      "server/**/*",
+      "public/**/*",
+      "db/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "artifactName": "Famy-Incident-System-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   },
   "dependencies": {
     "cors": "^2.8.6",
@@ -14,6 +40,8 @@
     "pg": "^8.11.3"
   },
   "devDependencies": {
+    "electron": "^45.5.0",
+    "electron-builder": "^26.18.0",
     "nodemon": "^3.1.0"
   }
 }

@@ -2,9 +2,10 @@
    Famy MDRRMO - Full Application Client Logic (Modules 1 to 5)
    ========================================================================== */
 // TOP OF public/js/app.js
+  // API endpoint: local server, Netlify proxy, or direct Render fallback.
   const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-  ? 'http://localhost:5000'
-  : 'https://incident-report-system-hw3b.onrender.com'; // <--- Replace with your actual Render URL
+  ? 'http://localhost:3000'
+  : (window.location.hostname.endsWith('.netlify.app') ? '' : 'https://incident-report-system-hw3b.onrender.com'); // <--- Replace with your actual Render URL
 
 // Helper Function: Sanitize strings from GLTF or input
 function sanitizeText(str) {
@@ -150,7 +151,7 @@ async function switchModule(modNumber) {
   
   if (modNumber === 2) {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/incidents/master-data`);
+      const res = await fetch(`${API_BASE_URL}/api/incidents`);
       if (res.ok) {
         const rows = await res.json();
         savedReports = rows.map(row => ({
@@ -1333,9 +1334,8 @@ function viewReportRecord(id) {
       </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200">
-      <div>
-        <h4 class="font-bold border-b border-slate-200 pb-1 mb-1 text-slate-700 uppercase">Field Responders</h4>
+    <div class="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200
+       
         ${(report.responders || []).map(r => '<div>• <strong>' + r.name + '</strong> (' + r.agency + ' - ' + r.role + ')</div>').join('') || '<div class="text-slate-400 italic">None recorded</div>'}
       </div>
       <div>
