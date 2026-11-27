@@ -1,4 +1,5 @@
 [build]
+  command = "node scripts/generate-supabase-config.js"
   publish = "public"
 
 [[redirects]]
