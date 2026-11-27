@@ -2,10 +2,8 @@
    Famy MDRRMO - Full Application Client Logic (Modules 1 to 5)
    ========================================================================== */
 // TOP OF public/js/app.js
-  // API endpoint: local server, Netlify proxy, or direct Render fallback.
-  const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-  ? 'http://localhost:3000'
-  : (window.location.hostname.endsWith('.netlify.app') ? '' : 'https://incident-report-system-hw3b.onrender.com'); // <--- Replace with your actual Render URL
+  // API endpoint: local/desktop Express server only.
+  const API_BASE_URL = 'http://localhost:3000';
 
 // Helper Function: Sanitize strings from GLTF or input
 function sanitizeText(str) {
@@ -1335,6 +1333,8 @@ function viewReportRecord(id) {
     </div>
 
     <div class="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200
+       
+        ${(report.responders || []).map(r => '<div>• <strong>' + r.name + '</strong> (' + r.agency + ' - ' + r.role + ')</div>').join('') || '<div class="text-slate
        
         ${(report.responders || []).map(r => '<div>• <strong>' + r.name + '</strong> (' + r.agency + ' - ' + r.role + ')</div>').join('') || '<div class="text-slate-400 italic">None recorded</div>'}
       </div>
