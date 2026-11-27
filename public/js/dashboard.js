@@ -1,15 +1,20 @@
-const API = (window.location.hostname === 'localhost' || window.location.hostname.endsWith('.netlify.app'))
-  ? '/api/incidents'
-  : 'https://incident-report-system-hw3b.onrender.com/api/incidents';
+const SUPABASE = window.IR_SUPABASE_CONFIG || {};
+
+async function fetchIncidentRows() {
+  if (!SUPABASE.url || !SUPABASE.anonKey) throw new Error('Supabase public configuration is missing');
+  const response = await fetch(`${SUPABASE.url}/rest/v1/incidents?select=*&order=created_at.desc`, {
+    headers: { apikey: SUPABASE.anonKey, Authorization: `Bearer ${SUPABASE.anonKey}` }
+  });
+  if (!response.ok) throw new Error(`Supabase returned ${response.status}`);
+  return response.json();
+}
 
 const colors = ['#4479c7','#e39a25','#4f9d75','#8a67c8','#c9504b','#56a7bd','#7a8799'];
 let records = [], map, markerLayer;
 
 async function loadRecords() {
   try {
-    const response = await fetch(API);
-    if (!response.ok) throw new Error(`Database returned ${response.status}`);
-    const rows = await response.json();
+    const rows = await fetchIncidentRows();
     records = rows.map(row => ({
       id: row.id, irNumber: row.ir_number, dateTime: row.date_time,
       nature: row.nature, place: row.place, landmark: row.landmark,
