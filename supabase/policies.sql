@@ -1,4 +1,7 @@
--- Run in Supabase SQL Editor after the table schema exists.
+-- Run in Supabase SQL Editor after db/schema.sql.
+GRANT SELECT ON public.incidents TO anon;
+GRANT SELECT ON public.system_master_data TO anon;
+
 ALTER TABLE public.incidents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.system_master_data ENABLE ROW LEVEL SECURITY;
 

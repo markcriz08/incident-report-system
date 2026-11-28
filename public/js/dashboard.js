@@ -1,7 +1,7 @@
 const SUPABASE = window.IR_SUPABASE_CONFIG || {};
 
 async function fetchIncidentRows() {
-  if (!SUPABASE.url || !SUPABASE.anonKey) throw new Error('Supabase public configuration is missing');
+  if (!SUPABASE.url || !SUPABASE.anonKey) throw new Error('Database connection is not configured. Add SUPABASE_URL and SUPABASE_ANON_KEY in Netlify environment variables, then redeploy.');
   const response = await fetch(`${SUPABASE.url}/rest/v1/incidents?select=*&order=created_at.desc`, {
     headers: { apikey: SUPABASE.anonKey, Authorization: `Bearer ${SUPABASE.anonKey}` }
   });
@@ -23,6 +23,10 @@ async function loadRecords() {
     }));
   } catch (error) {
     console.error(error);
+    const status = document.querySelector('.status strong');
+    if (status) status.textContent = 'Configuration needed';
+    const recentRows = document.getElementById('recent-rows');
+    if (recentRows) recentRows.innerHTML = `<tr><td colspan="5">${escapeHtml(error.message)}</td></tr>`;
   }
   renderDashboard();
 }
